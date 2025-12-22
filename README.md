@@ -1,59 +1,216 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PHP_Laravel12_Register_Using_Api_with_Validation
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full Laravel 12 project demonstrating API authentication using **Laravel Sanctum**, supporting email or mobile login, protected dashboard, and public users listing. Includes a JS frontend with login, registration, and dashboard pages styled with **TailwindCSS**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* User registration with validation (name, email, mobile, password)
+* Login using email or mobile number
+* Password hashed securely
+* Token-based authentication using Laravel Sanctum
+* Protected routes: `/profile`, `/logout`
+* Public route: `/users` (for testing/demo purposes)
+* JS frontend using TailwindCSS
+* Dashboard showing logged-in user info
+* Logout functionality
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+* **Backend:** Laravel 12, PHP 8.2+, Sanctum
+* **Frontend:** Blade + JavaScript + TailwindCSS
+* **Database:** MySQL
+* **API Testing:** Postman
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Installation / Setup
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Clone Repository
 
-### Premium Partners
+```bash
+git clone <your-repository-url>
+cd <project-folder>
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 2. Install Dependencies
 
-## Contributing
+```bash
+composer install
+npm install
+npm run dev
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Environment Setup
 
-## Code of Conduct
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Update `.env` with your database credentials:
 
-## Security Vulnerabilities
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Run Migrations
 
-## License
+```bash
+php artisan migrate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 5. Serve the Project
+
+```bash
+php artisan serve
+```
+
+Application URL: `http://localhost:8000`
+
+---
+
+## API Routes
+
+| Method | URL           | Description                 | Protected |
+| ------ | ------------- | --------------------------- | --------- |
+| POST   | /api/register | Register new user           | ❌         |
+| POST   | /api/login    | Login using email or mobile | ❌         |
+| GET    | /api/users    | List all users              | ❌         |
+| GET    | /api/profile  | Get logged-in user profile  | ✅         |
+| POST   | /api/logout   | Logout user                 | ✅         |
+
+**Headers for protected routes:**
+
+```
+Authorization: Bearer <token>
+Accept: application/json
+```
+
+---
+
+## Frontend Pages
+
+| Page      | URL        | Description                       |
+| --------- | ---------- | --------------------------------- |
+| Login     | /login     | Enter email/mobile + password     |
+| Register  | /register  | Create new account                |
+| Dashboard | /dashboard | Shows logged-in user info, logout |
+
+---
+
+## Login Flow
+
+1. Enter email or mobile and password.
+2. JS sends POST request to `/api/login`.
+3. On success, token is stored in `localStorage`.
+4. Redirect to `/dashboard`.
+5. Dashboard uses token to fetch `/api/profile`.
+6. Logout deletes token and redirects to login page.
+
+---
+
+## Registration Flow
+
+1. Enter name, email, mobile, password, password confirmation.
+2. JS sends POST request to `/api/register`.
+3. Validation errors are displayed if fields are invalid.
+4. On success, redirected to login page.
+
+---
+
+## Postman Testing
+
+**Register New User**
+
+* Method: POST `/api/register`
+* Body (JSON):
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "mobile": "9876543210",
+  "password": "Password123",
+  "password_confirmation": "Password123"
+}
+```
+
+**Login User**
+
+* Method: POST `/api/login`
+* Body (JSON):
+
+```json
+{
+  "login": "john@example.com",
+  "password": "Password123"
+}
+```
+
+Response includes token. Use `Authorization: Bearer <token>` for `/profile` or `/logout`.
+
+**Get All Users (Public)**
+
+* Method: GET `/api/users`
+* No token required.
+
+---
+
+## Validation Rules
+
+* **Name:** required, minimum 3 characters
+* **Email:** required, unique
+* **Mobile:** required, 10 digits, unique
+* **Password:** required, confirmed, minimum 8 characters, must include uppercase, lowercase, and number
+
+---
+
+## Security Notes
+
+* `/users` route is public for demo/testing only.
+* `/profile` and `/logout` are protected using Sanctum tokens.
+* Tokens must be included in `Authorization: Bearer <token>` header.
+
+---
+
+## Frontend Notes
+
+* TailwindCSS for styling.
+* JS handles:
+
+  * Login
+  * Registration
+  * Dashboard user info
+  * Logout
+* Token stored in `localStorage` and used for protected API calls.
+
+---
+
+## Screenshots / Demo
+
+* **Login Page:**
+<img width="1318" height="859" alt="image" src="https://github.com/user-attachments/assets/2050c8b0-31e7-4f96-b386-da728298070f" />
+
+* **Register Page:**
+<img width="958" height="879" alt="image" src="https://github.com/user-attachments/assets/d2197418-d0ae-4536-8e70-7790f47187a9" />
+
+* **Dashboard Page:**
+<img width="1616" height="738" alt="image" src="https://github.com/user-attachments/assets/54d41e1c-2b08-43cb-aab4-01be9823d3a6" />
+
+
+---
+
+## Troubleshooting
+
+* Run `php artisan cache:clear` or `php artisan config:clear` if environment changes are not reflecting
+* Check `.env` for database or Sanctum settings
+* Run `composer dump-autoload` if classes are not found

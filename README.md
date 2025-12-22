@@ -32,8 +32,8 @@ A full Laravel 12 project demonstrating API authentication using **Laravel Sanct
 ### 1. Clone Repository
 
 ```bash
-git clone <your-repository-url>
-cd <project-folder>
+git clone https://github.com/your-username/PHP_Laravel12_Register_Using_Api_with_Validation.git
+cd  PHP_Laravel12_Register_Using_Api_with_Validation
 ```
 
 ### 2. Install Dependencies

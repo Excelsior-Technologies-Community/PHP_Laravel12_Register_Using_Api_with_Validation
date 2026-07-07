@@ -4,15 +4,23 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
+// Public Routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/profile', [UserController::class, 'profile']);
-});
-
-// Public for testing users list
+// Public Users List (Search + Pagination + Sorting)
 Route::get('/users', [UserController::class, 'index']);
+
+// Protected Routes
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/profile', [UserController::class, 'profile']);
+
+    // Delete User
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+    // Dashboard Statistics
+    Route::get('/dashboard-stats', [UserController::class, 'dashboardStats']);
+});

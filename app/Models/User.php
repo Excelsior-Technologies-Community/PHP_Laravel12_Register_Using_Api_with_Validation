@@ -24,4 +24,9 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed', // Laravel will hash password automatically
     ];
+
+    public function loginHistories()
+    {
+        return $this->hasMany(LoginHistory::class);
+    }
 }

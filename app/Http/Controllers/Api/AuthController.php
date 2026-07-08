@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\LoginHistory;
+use Jenssegers\Agent\Agent;
 
 class AuthController extends Controller
 {
@@ -68,6 +70,16 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        $agent = new Agent();
+
+        LoginHistory::create([
+            'user_id'    => $user->id,
+            'ip_address' => $request->ip(),
+            'browser'    => $agent->browser(),
+            'platform'   => $agent->platform(),
+            'login_at'   => now(),
+        ]);
 
         return response()->json([
             'success' => true,

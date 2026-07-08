@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
+use App\Models\LoginHistory;
 
 class UserController extends Controller
 {
@@ -30,9 +33,7 @@ class UserController extends Controller
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
                     ->orWhere('mobile', 'LIKE', "%{$search}%");
-
             });
-
         }
 
         // Sorting
@@ -48,7 +49,6 @@ class UserController extends Controller
         $users = $query->paginate(4);
 
         return response()->json($users);
-
     }
 
     /**
@@ -79,7 +79,6 @@ class UserController extends Controller
                 'message' => 'User not found.'
 
             ], 404);
-
         }
 
         $user->delete();
@@ -93,6 +92,114 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Update Logged In User Profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'min:3',
+                'max:255'
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($user->id),
+            ],
+
+            'mobile' => [
+                'required',
+                'digits:10',
+                Rule::unique('users')->ignore($user->id),
+            ],
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+            'user' => $user
+        ]);
+    }
+
+    /**
+     * Change Password
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+
+        $request->validate([
+
+            'current_password' => [
+                'required'
+            ],
+
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/'
+            ],
+
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' => 'Current password is incorrect.'
+
+            ], 422);
+        }
+
+        $user->update([
+
+            'password' => Hash::make($request->password)
+
+        ]);
+
+        return response()->json([
+
+            'success' => true,
+
+            'message' => 'Password changed successfully.'
+
+        ]);
+    }
+
+    /**
+     * Login History
+     */
+    public function loginHistory(Request $request)
+    {
+        $histories = LoginHistory::where('user_id', $request->user()->id)
+            ->latest('login_at')
+            ->get([
+                'id',
+                'ip_address',
+                'browser',
+                'platform',
+                'login_at'
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'login_history' => $histories
+        ]);
+    }
     /**
      * Dashboard Statistics
      */
@@ -111,7 +218,5 @@ class UserController extends Controller
             'verified_emails' => User::whereNotNull('email_verified_at')->count(),
 
         ]);
-
     }
-
 }

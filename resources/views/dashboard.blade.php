@@ -99,11 +99,152 @@
 
         <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
 
-            <h2 class="text-2xl font-bold text-indigo-700 mb-4">
-                👤 Logged In User
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6">
+                👤 My Profile
             </h2>
 
-            <div id="profileInfo">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Full Name
+                    </label>
+
+                    <input
+                        id="name"
+                        type="text"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Email Address
+                    </label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Mobile Number
+                    </label>
+
+                    <input
+                        id="mobile"
+                        type="text"
+                        maxlength="10"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex items-center gap-4">
+
+                <button
+                    onclick="updateProfile()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transition duration-300">
+
+                    💾 Update Profile
+
+                </button>
+
+                <span
+                    id="profileMessage"
+                    class="text-sm font-medium">
+                </span>
+
+            </div>
+
+            <div class="mt-8 border-t pt-6">
+
+                <h3 class="text-xl font-bold text-indigo-700 mb-4">
+                    🔐 Change Password
+                </h3>
+
+
+                <input
+                    id="current_password"
+                    type="password"
+                    placeholder="Current Password"
+                    class="w-full border rounded-xl px-4 py-3 mb-3">
+
+
+                <input
+                    id="password"
+                    type="password"
+                    placeholder="New Password"
+                    class="w-full border rounded-xl px-4 py-3 mb-3">
+
+
+                <input
+                    id="password_confirmation"
+                    type="password"
+                    placeholder="Confirm Password"
+                    class="w-full border rounded-xl px-4 py-3 mb-3">
+
+
+                <button
+                    onclick="changePassword()"
+                    class="bg-green-600 text-white px-6 py-3 rounded-xl">
+
+                    Change Password
+
+                </button>
+
+
+                <div id="passwordMessage"></div>
+
+
+            </div>
+
+        </div>
+
+        <!-- Login History -->
+
+        <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+
+            <h2 class="text-2xl font-bold text-indigo-700 mb-5">
+                🕒 Recent Login Activity
+            </h2>
+
+            <div class="overflow-x-auto">
+
+                <table class="min-w-full">
+
+                    <thead class="bg-indigo-600 text-white">
+
+                        <tr>
+
+                            <th class="px-4 py-3 text-left">#</th>
+
+                            <th class="px-4 py-3 text-left">Browser</th>
+
+                            <th class="px-4 py-3 text-left">Platform</th>
+
+                            <th class="px-4 py-3 text-left">IP Address</th>
+
+                            <th class="px-4 py-3 text-left">Login Time</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="loginHistoryTable">
+
+                        <tr>
+
+                            <td colspan="5" class="text-center py-6 text-gray-500">
+                                Loading...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
 
             </div>
 
@@ -185,30 +326,30 @@
     </div>
 
     <script>
-    let token = localStorage.getItem('auth_token');
+        let token = localStorage.getItem('auth_token');
 
-    if (!token) {
-        window.location.href = "/login";
-    }
+        if (!token) {
+            window.location.href = "/login";
+        }
 
-    let currentPage = 1;
+        let currentPage = 1;
 
-    async function loadUsers(page = 1) {
+        async function loadUsers(page = 1) {
 
-        currentPage = page;
+            currentPage = page;
 
-        let search = document.getElementById("search").value;
-        let sort = document.getElementById("sort").value;
+            let search = document.getElementById("search").value;
+            let sort = document.getElementById("sort").value;
 
-        const response = await fetch(`/api/users?page=${page}&search=${search}&sort=${sort}`);
+            const response = await fetch(`/api/users?page=${page}&search=${search}&sort=${sort}`);
 
-        const data = await response.json();
+            const data = await response.json();
 
-        let rows = "";
+            let rows = "";
 
-        data.data.forEach(user => {
+            data.data.forEach(user => {
 
-            rows += `
+                rows += `
         <tr class="border-b hover:bg-blue-50 transition duration-200">
 
             <td class="px-4 py-3">${user.id}</td>
@@ -233,15 +374,15 @@
 
         </tr>
         `;
-        });
+            });
 
-        document.getElementById("userTable").innerHTML = rows;
+            document.getElementById("userTable").innerHTML = rows;
 
-        let pagination = "";
+            let pagination = "";
 
-        for (let i = 1; i <= data.last_page; i++) {
+            for (let i = 1; i <= data.last_page; i++) {
 
-            pagination += `
+                pagination += `
         <button
             onclick="loadUsers(${i})"
             class="px-4 py-2 rounded-lg font-semibold shadow ${i == data.current_page
@@ -253,127 +394,245 @@
 
         </button>
         `;
+            }
+
+            document.getElementById("pagination").innerHTML = pagination;
         }
 
-        document.getElementById("pagination").innerHTML = pagination;
-    }
+        async function loadProfile() {
 
-    async function loadProfile() {
+            const response = await fetch('/api/profile', {
 
-        const response = await fetch('/api/profile', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
 
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
+            });
 
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-
-        document.getElementById("profileInfo").innerHTML = `
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-    <div class="bg-blue-50 p-4 rounded-xl">
-        <p class="text-gray-500">Name</p>
-        <h3 class="font-bold text-lg">${data.user.name}</h3>
-    </div>
-
-    <div class="bg-green-50 p-4 rounded-xl">
-        <p class="text-gray-500">Email</p>
-        <h3 class="font-bold text-lg">${data.user.email}</h3>
-    </div>
-
-    <div class="bg-purple-50 p-4 rounded-xl">
-        <p class="text-gray-500">Mobile</p>
-        <h3 class="font-bold text-lg">${data.user.mobile}</h3>
-    </div>
-
-</div>
-`;
-    }
-
-    async function loadStats() {
-
-        const response = await fetch('/api/dashboard-stats', {
-
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
-
-        });
-
-        const data = await response.json();
-
-        document.getElementById("totalUsers").innerHTML = data.total_users;
-
-        document.getElementById("todayUsers").innerHTML = data.today_users;
-
-        document.getElementById("verifiedUsers").innerHTML = data.verified_emails;
-
-        document.getElementById("latestUser").innerHTML =
-            data.latest_user ? data.latest_user.name : "--";
-
-    }
-
-    async function deleteUser(id) {
-
-        if (!confirm("Delete this user?")) {
-            return;
+            document.getElementById("name").value = data.user.name;
+            document.getElementById("email").value = data.user.email;
+            document.getElementById("mobile").value = data.user.mobile;
         }
 
-        await fetch(`/api/users/${id}`, {
+        async function updateProfile() {
 
-            method: "DELETE",
+            const response = await fetch('/api/profile/update', {
 
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
+                method: "POST",
+
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    name: document.getElementById("name").value,
+                    email: document.getElementById("email").value,
+                    mobile: document.getElementById("mobile").value
+
+                })
+
+            });
+
+            const data = await response.json();
+
+            const message = document.getElementById("profileMessage");
+
+            if (response.ok) {
+
+                message.innerHTML =
+                    `<span class="text-green-600 font-semibold">${data.message}</span>`;
+
+            } else {
+
+                let errors = "";
+
+                if (data.errors) {
+                    Object.values(data.errors).forEach(error => {
+                        errors += `<div class="text-red-600">${error[0]}</div>`;
+                    });
+                } else {
+                    errors = `<div class="text-red-600">${data.message ?? 'Something went wrong.'}</div>`;
+                }
+
+                message.innerHTML = errors;
             }
+        }
+
+        async function changePassword() {
+
+            const response = await fetch('/api/change-password', {
+
+                method: "POST",
+
+                headers: {
+
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+
+                },
+
+                body: JSON.stringify({
+
+                    current_password: document.getElementById("current_password").value,
+                    password: document.getElementById("password").value,
+                    password_confirmation: document.getElementById("password_confirmation").value
+
+                })
+
+            });
+
+            const data = await response.json();
+
+            document.getElementById("passwordMessage").innerHTML =
+                response.ok ?
+                `<p class="text-green-600">${data.message}</p>` :
+                `<p class="text-red-600">${data.message}</p>`;
+
+
+        }
+
+        async function loadStats() {
+
+            const response = await fetch('/api/dashboard-stats', {
+
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
+
+            });
+
+            const data = await response.json();
+
+            document.getElementById("totalUsers").innerHTML = data.total_users;
+
+            document.getElementById("todayUsers").innerHTML = data.today_users;
+
+            document.getElementById("verifiedUsers").innerHTML = data.verified_emails;
+
+            document.getElementById("latestUser").innerHTML =
+                data.latest_user ? data.latest_user.name : "--";
+
+        }
+
+        async function loadLoginHistory() {
+
+            const response = await fetch('/api/login-history', {
+
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
+
+            });
+
+            const data = await response.json();
+
+            let rows = "";
+
+            if (data.login_history.length === 0) {
+
+                rows = `
+            <tr>
+                <td colspan="5" class="text-center py-6 text-gray-500">
+                    No Login History Found
+                </td>
+            </tr>
+        `;
+
+            } else {
+
+                data.login_history.forEach((history, index) => {
+
+                    rows += `
+                <tr class="border-b hover:bg-gray-50">
+
+                    <td class="px-4 py-3">${index + 1}</td>
+
+                    <td class="px-4 py-3">${history.browser}</td>
+
+                    <td class="px-4 py-3">${history.platform}</td>
+
+                    <td class="px-4 py-3">${history.ip_address}</td>
+
+                    <td class="px-4 py-3">${new Date(history.login_at).toLocaleString()}</td>
+
+                </tr>
+            `;
+
+                });
+
+            }
+
+            document.getElementById("loginHistoryTable").innerHTML = rows;
+
+        }
+
+        async function deleteUser(id) {
+
+            if (!confirm("Delete this user?")) {
+                return;
+            }
+
+            await fetch(`/api/users/${id}`, {
+
+                method: "DELETE",
+
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
+
+            });
+
+            loadUsers(currentPage);
+
+            loadStats();
+
+        }
+
+        async function logout() {
+
+            await fetch('/api/logout', {
+
+                method: 'POST',
+
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json'
+                }
+
+            });
+
+            localStorage.removeItem("auth_token");
+
+            window.location.href = "/login";
+
+        }
+
+        document.getElementById("search").addEventListener("keyup", function() {
+
+            loadUsers(1);
 
         });
 
-        loadUsers(currentPage);
+        document.getElementById("sort").addEventListener("change", function() {
 
+            loadUsers(1);
+
+        });
+
+        loadUsers();
+        loadProfile();
         loadStats();
-
-    }
-
-    async function logout() {
-
-        await fetch('/api/logout', {
-
-            method: 'POST',
-
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
-
-        });
-
-        localStorage.removeItem("auth_token");
-
-        window.location.href = "/login";
-
-    }
-
-    document.getElementById("search").addEventListener("keyup", function() {
-
-        loadUsers(1);
-
-    });
-
-    document.getElementById("sort").addEventListener("change", function() {
-
-        loadUsers(1);
-
-    });
-
-    loadUsers();
-    loadProfile();
-    loadStats();
+        loadLoginHistory();
     </script>
 
 </body>

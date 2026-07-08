@@ -18,6 +18,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [UserController::class, 'profile']);
 
+    // Update Profile
+    Route::post('/profile/update', [UserController::class, 'updateProfile']);
+
+    Route::post('/change-password', [UserController::class, 'changePassword']);
+
+    Route::get('/login-history', [UserController::class, 'loginHistory']);
+    
     // Delete User
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 

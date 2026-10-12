@@ -37,6 +37,8 @@ class AuthController extends Controller
             'email' => $request->email,
             'mobile' => $request->mobile,
             'password' => Hash::make($request->password),
+            'role' => 'user',
+            'status' => 'active',
         ]);
 
         return response()->json([
@@ -65,6 +67,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
+        // Check if user is blocked
+        if (isset($user->status) && $user->status === 'blocked') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account has been suspended by an administrator. Please contact support.'
+            ], 403);
+        }
+
         if (!Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Invalid password'], 401);
         }
@@ -72,12 +82,24 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         $agent = new Agent();
+        $currentBrowser = $agent->browser() ?: 'Unknown Browser';
+        $currentPlatform = $agent->platform() ?: 'Unknown OS';
+        $currentIp = $request->ip();
+
+        // New Device / Unusual IP Security Alert Detection
+        $previousLogins = LoginHistory::where('user_id', $user->id)->exists();
+        $knownDevice = LoginHistory::where('user_id', $user->id)
+            ->where('ip_address', $currentIp)
+            ->where('browser', $currentBrowser)
+            ->exists();
+
+        $isNewDevice = $previousLogins && !$knownDevice;
 
         LoginHistory::create([
             'user_id'    => $user->id,
-            'ip_address' => $request->ip(),
-            'browser'    => $agent->browser(),
-            'platform'   => $agent->platform(),
+            'ip_address' => $currentIp,
+            'browser'    => $currentBrowser,
+            'platform'   => $currentPlatform,
             'login_at'   => now(),
         ]);
 
@@ -85,7 +107,14 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login successful',
             'token' => $token,
-            'user' => $user
+            'user' => $user,
+            'new_device_alert' => $isNewDevice ? [
+                'detected' => true,
+                'browser' => $currentBrowser,
+                'platform' => $currentPlatform,
+                'ip_address' => $currentIp,
+                'time' => now()->toDayDateTimeString(),
+            ] : null
         ]);
     }
 

@@ -91,10 +91,23 @@
                 body: JSON.stringify(formData)
             });
 
+            // Strict API Rate Limiting Handling (429 Too Many Requests)
+            if (response.status === 429) {
+                showMessage('login-message', '⚠️ Too many login attempts! Brute-force shield activated. Please wait 1 minute before trying again.', true);
+                return;
+            }
+
             const data = await response.json();
 
             if (response.ok && data.success) {
                 localStorage.setItem('auth_token', data.token);
+
+                if (data.new_device_alert) {
+                    localStorage.setItem('new_device_alert', JSON.stringify(data.new_device_alert));
+                } else {
+                    localStorage.removeItem('new_device_alert');
+                }
+
                 window.location.href = '/dashboard';
             } else {
                 showMessage('login-message', data.message || 'Login failed');

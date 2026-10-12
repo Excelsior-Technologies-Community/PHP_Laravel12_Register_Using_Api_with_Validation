@@ -57,6 +57,36 @@
                         </button>
                     </div>
                     <div id="password-error" class="hidden"></div>
+
+                    <!-- Live Password Strength Meter UI -->
+                    <div id="password-strength-container" class="mt-2.5 hidden">
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="text-gray-500 font-medium">Password Strength:</span>
+                            <span id="strength-label" class="font-bold text-red-500">Too Weak</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner">
+                            <div id="strength-bar" class="h-2 rounded-full transition-all duration-300 w-0 bg-red-500"></div>
+                        </div>
+
+                        <!-- Real-time Rules Checklist -->
+                        <div class="grid grid-cols-2 gap-1.5 text-xs mt-3 text-gray-500 font-medium bg-gray-50 p-2.5 rounded-lg border border-gray-100" id="password-rules">
+                            <div id="rule-length" class="flex items-center gap-1.5 text-gray-400">
+                                <i class="fas fa-times-circle text-red-400"></i> Min. 8 characters
+                            </div>
+                            <div id="rule-upper" class="flex items-center gap-1.5 text-gray-400">
+                                <i class="fas fa-times-circle text-red-400"></i> Uppercase (A-Z)
+                            </div>
+                            <div id="rule-lower" class="flex items-center gap-1.5 text-gray-400">
+                                <i class="fas fa-times-circle text-red-400"></i> Lowercase (a-z)
+                            </div>
+                            <div id="rule-number" class="flex items-center gap-1.5 text-gray-400">
+                                <i class="fas fa-times-circle text-red-400"></i> Number (0-9)
+                            </div>
+                            <div id="rule-special" class="flex items-center gap-1.5 text-gray-400 col-span-2">
+                                <i class="fas fa-times-circle text-red-400"></i> Special character (@$!%*?&#)
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -102,6 +132,72 @@
             }
         }
 
+        // Live Dynamic Password Strength Meter
+        const passwordInput = document.getElementById('password');
+        const strengthContainer = document.getElementById('password-strength-container');
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthLabel = document.getElementById('strength-label');
+
+        passwordInput.addEventListener('input', function () {
+            const val = this.value;
+
+            if (!val) {
+                strengthContainer.classList.add('hidden');
+                return;
+            }
+
+            strengthContainer.classList.remove('hidden');
+
+            const hasLength = val.length >= 8;
+            const hasUpper = /[A-Z]/.test(val);
+            const hasLower = /[a-z]/.test(val);
+            const hasNumber = /[0-9]/.test(val);
+            const hasSpecial = /[^A-Za-z0-9]/.test(val);
+
+            updateRule('rule-length', hasLength);
+            updateRule('rule-upper', hasUpper);
+            updateRule('rule-lower', hasLower);
+            updateRule('rule-number', hasNumber);
+            updateRule('rule-special', hasSpecial);
+
+            const score = [hasLength, hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+
+            if (score <= 2) {
+                strengthBar.style.width = '25%';
+                strengthBar.className = 'h-2 rounded-full transition-all duration-300 bg-red-500';
+                strengthLabel.textContent = 'Weak';
+                strengthLabel.className = 'font-bold text-red-500';
+            } else if (score === 3) {
+                strengthBar.style.width = '50%';
+                strengthBar.className = 'h-2 rounded-full transition-all duration-300 bg-yellow-500';
+                strengthLabel.textContent = 'Fair';
+                strengthLabel.className = 'font-bold text-yellow-500';
+            } else if (score === 4) {
+                strengthBar.style.width = '75%';
+                strengthBar.className = 'h-2 rounded-full transition-all duration-300 bg-blue-500';
+                strengthLabel.textContent = 'Good';
+                strengthLabel.className = 'font-bold text-blue-500';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.className = 'h-2 rounded-full transition-all duration-300 bg-green-500';
+                strengthLabel.textContent = 'Strong 🛡️';
+                strengthLabel.className = 'font-bold text-green-600';
+            }
+        });
+
+        function updateRule(elementId, isValid) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const icon = el.querySelector('i');
+            if (isValid) {
+                el.className = 'flex items-center gap-1.5 text-green-600 font-semibold';
+                icon.className = 'fas fa-check-circle text-green-500';
+            } else {
+                el.className = 'flex items-center gap-1.5 text-gray-400';
+                icon.className = 'fas fa-times-circle text-red-400';
+            }
+        }
+
         document.getElementById('register-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             clearMessages();
@@ -114,7 +210,6 @@
                 password_confirmation: document.getElementById('password_confirmation').value
             };
 
-
             try {
                 const response = await fetch('/api/register', {
                     method: 'POST',
@@ -125,10 +220,16 @@
                     body: JSON.stringify(formData)
                 });
 
+                // Strict API Rate Limiting Handling (429 Too Many Requests)
+                if (response.status === 429) {
+                    showMessage('register-message', '⚠️ Too many registration attempts! Security throttle activated. Please wait 1 minute before trying again.', true);
+                    return;
+                }
+
                 const data = await response.json();
 
                 if (response.ok) {
-                    showMessage('register-message', data.message, false);
+                    showMessage('register-message', '🎉 ' + data.message, false);
 
                     setTimeout(() => {
                         window.location.href = '/login';
